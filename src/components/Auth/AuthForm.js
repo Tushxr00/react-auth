@@ -7,6 +7,7 @@ const AuthForm = () => {
   const passwordInputRef = useRef()
 
   const [isLogin, setIsLogin] = useState(true);
+  const [isLoading,setIsLoading] = useState(false)
 
   const switchAuthModeHandler = () => {
     setIsLogin((prevState) => !prevState);
@@ -14,6 +15,8 @@ const AuthForm = () => {
 
   const submitHandler = (event) => {
     event.preventDefault();
+
+    setIsLoading(true)
 
     const enteredEmail = emailInputRef.current.value
     const enteredPassword = passwordInputRef.current.value
@@ -35,6 +38,7 @@ const AuthForm = () => {
           }
         }
       ).then(Response => {
+        setIsLoading(false)
         if (Response.ok) {
           // response is ok
         } else {
@@ -63,7 +67,8 @@ const AuthForm = () => {
           <input type='password' id='password' ref={passwordInputRef} required />
         </div>
         <div className={classes.actions}>
-          <button>{isLogin ? 'Login' : 'Create Account'}</button>
+         { !isLoading && <button>{isLogin ? 'Login' : 'Create Account'}</button>}
+         { isLoading && <p>... Sending Request to FireBase ...</p>}
           <button
             type='button'
             className={classes.toggle}
