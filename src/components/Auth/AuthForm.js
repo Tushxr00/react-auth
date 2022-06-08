@@ -1,13 +1,42 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 
 import classes from './AuthForm.module.css';
 
 const AuthForm = () => {
+  const emailInputRef = useRef()
+  const passwordInputRef = useRef()
+
   const [isLogin, setIsLogin] = useState(true);
 
   const switchAuthModeHandler = () => {
     setIsLogin((prevState) => !prevState);
   };
+
+  const submitHandler = (event) => {
+    event.preventDefault();
+
+    const enteredEmail = emailInputRef.current.value
+    const enteredPassword = passwordInputRef.current.value
+
+    if (isLogin) {
+
+    } else {
+      fetch(
+        "https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=AIzaSyAmAa2s7k7-0jkCPIPMHxIY0hfqcUoAEkI",
+        {
+          method: "POST",
+          body: JSON.stringify({
+            email: enteredEmail,
+            password: enteredPassword,
+            returnSecureToken: true
+          }),
+          headers:{
+            "Content-Type": "application/json"
+          }
+        }
+      )
+    }
+  }
 
   return (
     <section className={classes.auth}>
@@ -15,11 +44,11 @@ const AuthForm = () => {
       <form>
         <div className={classes.control}>
           <label htmlFor='email'>Your Email</label>
-          <input type='email' id='email' required />
+          <input type='email' id='email' ref={emailInputRef} required />
         </div>
         <div className={classes.control}>
           <label htmlFor='password'>Your Password</label>
-          <input type='password' id='password' required />
+          <input type='password' id='password' ref={passwordInputRef} required />
         </div>
         <div className={classes.actions}>
           <button>{isLogin ? 'Login' : 'Create Account'}</button>
