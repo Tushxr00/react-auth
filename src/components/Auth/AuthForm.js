@@ -30,18 +30,27 @@ const AuthForm = () => {
             password: enteredPassword,
             returnSecureToken: true
           }),
-          headers:{
+          headers: {
             "Content-Type": "application/json"
           }
         }
-      )
+      ).then(Response => {
+        if (Response.ok) {
+          // response is ok
+        } else {
+          return Response.json().then(data => {
+            //show error modal 
+            console.log(data)
+          })
+        }
+      })
     }
   }
 
   return (
     <section className={classes.auth}>
       <h1>{isLogin ? 'Login' : 'Sign Up'}</h1>
-      <form>
+      <form onSubmit={submitHandler}>
         <div className={classes.control}>
           <label htmlFor='email'>Your Email</label>
           <input type='email' id='email' ref={emailInputRef} required />
