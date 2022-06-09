@@ -1,10 +1,15 @@
-import { useRef, useState } from "react";
+import { useContext, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import AuthContext from "../../store/auth- context";
 
 import classes from "./AuthForm.module.css";
 
 const AuthForm = () => {
+  const navigation = useNavigate();
   const emailInputRef = useRef();
   const passwordInputRef = useRef();
+
+  const authCtx = useContext(AuthContext);
 
   const [isLogin, setIsLogin] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
@@ -21,36 +26,46 @@ const AuthForm = () => {
     const enteredEmail = emailInputRef.current.value;
     const enteredPassword = passwordInputRef.current.value;
 
+    let url;
     if (isLogin) {
+      url =
+        "https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=AIzaSyAmAa2s7k7-0jkCPIPMHxIY0hfqcUoAEkI";
     } else {
-      fetch(
-        "https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=AIzaSyAmAa2s7k7-0jkCPIPMHxIY0hfqcUoAEkI",
-        {
-          method: "POST",
-          body: JSON.stringify({
-            email: enteredEmail,
-            password: enteredPassword,
-            returnSecureToken: true,
-          }),
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
-      ).then((Response) => {
+      url =
+        "https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=AIzaSyAmAa2s7k7-0jkCPIPMHxIY0hfqcUoAEkI";
+    }
+    fetch(url, {
+      method: "POST",
+      body: JSON.stringify({
+        email: enteredEmail,
+        password: enteredPassword,
+        returnSecureToken: true,
+      }),
+      headers: {
+        "Content-Type": "application/json",
+      },
+    })
+      .then((response) => {
         setIsLoading(false);
-        if (Response.ok) {
-          // response is ok
+        if (response.ok) {
+          return response.json();
         } else {
-          return Response.json().then((data) => {
+          return response.json().then((data) => {
             let errorMessage = "Authentication failed";
             if (data?.error?.message) {
               errorMessage = data.error.message;
             }
-            alert(errorMessage);
+            throw new Error(errorMessage);
           });
         }
+      })
+      .then((data) => {
+        authCtx.login(data.idToken);
+        navigation("/");
+      })
+      .catch((err) => {
+        alert(err.message);
       });
-    }
   };
 
   return (
