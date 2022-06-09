@@ -25,10 +25,10 @@ const ProfileForm = () => {
           "Content-Type": "application/json"
         }
       }).then(response => {
-      // assuming it sends a success response
-    }).catch(err => {
-      console.log(err)
-    })
+        console.log(response)
+      }).catch(err => {
+        console.log(err)
+      })
   }
   return (
     <form className={classes.form} onSubmit={submitHandler}>
