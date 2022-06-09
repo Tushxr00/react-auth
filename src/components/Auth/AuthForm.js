@@ -7,7 +7,7 @@ const AuthForm = () => {
   const passwordInputRef = useRef()
 
   const [isLogin, setIsLogin] = useState(true);
-  const [isLoading,setIsLoading] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
 
   const switchAuthModeHandler = () => {
     setIsLogin((prevState) => !prevState);
@@ -21,37 +21,43 @@ const AuthForm = () => {
     const enteredEmail = emailInputRef.current.value
     const enteredPassword = passwordInputRef.current.value
 
+    let url;
     if (isLogin) {
-
+      url = "https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=AIzaSyAmAa2s7k7-0jkCPIPMHxIY0hfqcUoAEkI"
     } else {
-      fetch(
-        "https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=AIzaSyAmAa2s7k7-0jkCPIPMHxIY0hfqcUoAEkI",
-        {
-          method: "POST",
-          body: JSON.stringify({
-            email: enteredEmail,
-            password: enteredPassword,
-            returnSecureToken: true
-          }),
-          headers: {
-            "Content-Type": "application/json"
-          }
-        }
-      ).then(Response => {
-        setIsLoading(false)
-        if (Response.ok) {
-          // response is ok
-        } else {
-          return Response.json().then(data => {
-            let errorMessage = "Authentication failed"
-            if (data?.error?.message) {
-              errorMessage = data.error.message;
-            }
-            alert(errorMessage)
-          })
-        }
-      })
+      url = "https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=AIzaSyAmAa2s7k7-0jkCPIPMHxIY0hfqcUoAEkI"
     }
+    fetch(
+      url,
+      {
+        method: "POST",
+        body: JSON.stringify({
+          email: enteredEmail,
+          password: enteredPassword,
+          returnSecureToken: true
+        }),
+        headers: {
+          "Content-Type": "application/json"
+        }
+      }
+    ).then(response => {
+      setIsLoading(false)
+      if (response.ok) {
+        return response.json()
+      } else {
+        return response.json().then(data => {
+          let errorMessage = "Authentication failed"
+          // if (data?.error?.message) {
+          //   errorMessage = data.error.message;
+          // }
+          throw new Error(errorMessage)
+        })
+      }
+    }).then(data =>{
+      console.log(data)
+    }).catch(err=>{
+      alert(err)
+    })
   }
 
   return (
@@ -67,8 +73,8 @@ const AuthForm = () => {
           <input type='password' id='password' ref={passwordInputRef} required />
         </div>
         <div className={classes.actions}>
-         { !isLoading && <button>{isLogin ? 'Login' : 'Create Account'}</button>}
-         { isLoading && <p>... Sending Request to FireBase ...</p>}
+          {!isLoading && <button>{isLogin ? 'Login' : 'Create Account'}</button>}
+          {isLoading && <p>... Sending Request to FireBase ...</p>}
           <button
             type='button'
             className={classes.toggle}
