@@ -1,4 +1,4 @@
-import { useContext } from "react";
+import React, { useContext } from "react";
 import { Navigate, Route, Routes } from "react-router-dom";
 
 import Layout from "./components/Layout/Layout";
@@ -17,10 +17,13 @@ function App() {
         {!authCtx.isLoggedIn && (
           <Route path="/auth" element={<AuthPage />} />
         )}
-        {authCtx.isLoggedIn && (
-          <Route path="/profile" element={<ProfilePage />} />
-        )}
-        <Route path="*" element={<Navigate to="/" />}/>
+        <Route path="/profile" element={
+          <React.Fragment>
+            {authCtx.isLoggedIn && <ProfilePage />}
+            {!authCtx.isLoggedIn && <Navigate to="/" />}
+          </React.Fragment>
+        } />
+        <Route path="*" element={<Navigate to="/" />} />
       </Routes>
     </Layout>
   );
