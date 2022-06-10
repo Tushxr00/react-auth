@@ -1,4 +1,6 @@
-import React, { useState } from "react"
+import React, { useEffect, useState } from "react"
+
+let logoutTimer;
 
 const AuthContext = React.createContext({
     token: "",
@@ -7,8 +9,8 @@ const AuthContext = React.createContext({
     logout: () => { }
 });
 
-const calculateRemaingTime=(expirationTime)=>{
-    const currentTime = new Date().getTime()
+const calculateRemaingTime = (expirationTime) => {
+    const currentTime = new Date().getTime("token")
     const adjustedExpirationTime = new Date(expirationTime).getTime()
 
     const remainingDuration = adjustedExpirationTime - currentTime
@@ -16,8 +18,29 @@ const calculateRemaingTime=(expirationTime)=>{
     return remainingDuration
 }
 
+const retriveStoredToken = () =>{
+    const storedToken = localStorage.getItem("token")
+    const storedExpirationTime = localStorage.getItem("expirationTIme")
+
+    const remainingTime = calculateRemaingTime(storedExpirationTime)
+
+    if (remainingTime <= 60000){
+        localStorage.removeItem("token")
+        localStorage.removeItem("expirationTIme")
+        return null
+    }
+    return {
+        token: storedToken,
+        duration: remainingTime
+    }
+}
+
 export const AuthContextProvider = (props) => {
-    const initialToken = localStorage.getItem("token")
+    const tokenData = retriveStoredToken()
+    let initialToken;
+    if (tokenData){
+        initialToken = tokenData.token
+    }
     const [token, setToken] = useState(initialToken)
 
     const userIsLoggedIn = !!token;
@@ -25,16 +48,26 @@ export const AuthContextProvider = (props) => {
     const logoutHandler = () => {
         setToken(null)
         localStorage.removeItem("token")
+        if (logoutTimer) {
+            clearTimeout(logoutTimer)
+        }
     }
-    
-    const loginHandler = (token,expirationTime) => {
+
+    const loginHandler = (token, expirationTime) => {
         setToken(token)
         localStorage.setItem("token", token)
+        localStorage.setItem("expirationTime" , expirationTime)
 
         const remainingTime = calculateRemaingTime(expirationTime)
 
-        setTimeout(loginHandler,remainingTime)
+        logoutTimer = setTimeout(loginHandler, remainingTime)
     }
+
+    useEffect(()=>{
+        if (tokenData){
+            logoutTimer = setTimeout(logoutHandler,tokenData.duration)
+        }
+    },[tokenData])
 
 
     const contextValue = {
